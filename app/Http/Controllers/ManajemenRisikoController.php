@@ -642,10 +642,18 @@ class ManajemenRisikoController extends Controller
                 'tampil_manajemen_risiko' => 1
             ]);
 
-            // UBAH BAGIAN INI: Kembali ke halaman sebelumnya dengan pesan sukses
-            return redirect()->back()->with('success', count($request->selected_ids) . ' risiko berhasil ditampilkan!');
+            // Dapatkan tahun dari risiko yang di-update (untuk redirect dengan filter tahun yang sama)
+            $tahun = Peta::whereIn('id', $request->selected_ids)
+                ->selectRaw('YEAR(created_at) as tahun')
+                ->first()
+                ->tahun ?? date('Y');
+
+            // Redirect ke halaman Data Manajemen Risiko dengan pesan sukses
+            return redirect()
+                ->route('manajemen-risiko.data', ['tahun' => $tahun])
+                ->with('success', count($request->selected_ids) . ' risiko berhasil ditampilkan!');
         } catch (\Exception $e) {
-            // UBAH BAGIAN INI: Kembali dengan pesan error
+            // Kembali ke halaman sebelumnya dengan pesan error
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }

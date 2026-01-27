@@ -362,6 +362,7 @@
                                                     <th>Unit Kerja</th>
                                                     <th width="100" class="text-center">Kode</th>
                                                     <th width="120" class="text-center">Kegiatan</th>
+                                                    <th width="130" class="text-center">Risiko Terpilih</th>
                                                     <th width="120" class="text-center">Kategori</th>
                                                     <th>Judul Risiko</th>
                                                     <th width="90" class="text-center">Skor</th>
@@ -464,9 +465,12 @@
 
                                                         // ✅ PERBAIKAN: Hitung jumlah risiko di unit ini (optimasi query)
                                                         $jumlahRisikoUnit = 0;
+                                                        $jumlahRisikoTerpilih = 0;
                                                         if ($peta->jenis) {
                                                             // Gunakan caching atau hitung sekali per unit
                                                             static $risikoCountCache = [];
+                                                            static $risikoTerpilihCache = [];
+                                                            
                                                             if (!isset($risikoCountCache[$peta->jenis])) {
                                                                 $risikoCountCache[
                                                                     $peta->jenis
@@ -475,6 +479,17 @@
                                                                     ->count();
                                                             }
                                                             $jumlahRisikoUnit = $risikoCountCache[$peta->jenis];
+                                                            
+                                                            // Hitung jumlah risiko yang sudah terpilih (tampil_manajemen_risiko = 1)
+                                                            if (!isset($risikoTerpilihCache[$peta->jenis])) {
+                                                                $risikoTerpilihCache[
+                                                                    $peta->jenis
+                                                                ] = \App\Models\Peta::where('jenis', $peta->jenis)
+                                                                    ->whereYear('created_at', $tahun)
+                                                                    ->where('tampil_manajemen_risiko', 1)
+                                                                    ->count();
+                                                            }
+                                                            $jumlahRisikoTerpilih = $risikoTerpilihCache[$peta->jenis];
                                                         }
                                                     @endphp
 
@@ -533,6 +548,30 @@
                                                                         {{ \App\Models\Kegiatan::hitungKegiatanTampil($unitKerjaModel->id ?? 0, $tahun) }})
                                                                     </small>
                                                                 @endif
+                                                            </div>
+                                                        </td>
+                                                        <td class="text-center align-middle">
+                                                            <div class="d-flex flex-column align-items-center">
+                                                                <div class="d-flex align-items-center mb-1">
+                                                                    <i class="fas fa-check-circle text-success mr-2"></i>
+                                                                    <span class="font-weight-bold"
+                                                                        style="font-size: 1.1rem; color: #28a745;">
+                                                                        {{ $jumlahRisikoTerpilih }}
+                                                                    </span>
+                                                                    @if ($jumlahRisikoUnit > 0)
+                                                                        <small
+                                                                            class="text-muted ml-1">/{{ $jumlahRisikoUnit }}</small>
+                                                                    @endif
+                                                                </div>
+                                                                <small class="text-muted">
+                                                                    @if ($jumlahRisikoTerpilih == 0)
+                                                                        <span class="text-danger">Belum ada risiko dipilih</span>
+                                                                    @elseif($jumlahRisikoTerpilih == 1)
+                                                                        1 risiko dipilih
+                                                                    @else
+                                                                        {{ $jumlahRisikoTerpilih }} risiko dipilih
+                                                                    @endif
+                                                                </small>
                                                             </div>
                                                         </td>
                                                         <td class="text-center align-middle">

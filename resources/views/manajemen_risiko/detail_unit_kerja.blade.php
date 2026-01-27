@@ -104,11 +104,11 @@
                                                         <td class="text-center align-middle">
                                                             <div class="custom-control custom-checkbox d-flex justify-content-center">
                                                                 <input type="checkbox" class="custom-control-input"
-                                                                    id="check-{{ $item['kegiatan']->id_kegiatan }}-{{ $loop->index }}"
-                                                                    name="kegiatan_ids[]"
-                                                                    value="{{ $item['kegiatan']->id_kegiatan }}">
+                                                                    id="check-peta-{{ $item['peta']->id }}-{{ $loop->index }}"
+                                                                    name="peta_ids[]"
+                                                                    value="{{ $item['peta']->id }}">
                                                                 <label class="custom-control-label"
-                                                                    for="check-{{ $item['kegiatan']->id_kegiatan }}-{{ $loop->index }}"></label>
+                                                                    for="check-peta-{{ $item['peta']->id }}-{{ $loop->index }}"></label>
                                                             </div>
                                                         </td>
 
@@ -272,8 +272,8 @@
                 console.log('Detail Unit Kerja JS Loaded'); // Debug log
 
                 // 1. Hitung checkbox yang dicentang
-                $('input[name="kegiatan_ids[]"]').on('change', function() {
-                    let count = $('input[name="kegiatan_ids[]"]:checked').length;
+                $('input[name="peta_ids[]"]').on('change', function() {
+                    let count = $('input[name="peta_ids[]"]:checked').length;
                     console.log('Checkbox changed, selected:', count); // Debug
                     if (count > 0) {
                         $('#selected-count').text(count).show();
@@ -287,20 +287,20 @@
                     e.preventDefault();
                     console.log('Update button clicked'); // Debug
 
-                    // Ambil semua ID yang dicentang
+                    // Ambil semua ID risiko (peta) yang dicentang
                     var selectedIds = [];
-                    $('input[name="kegiatan_ids[]"]:checked').each(function() {
+                    $('input[name="peta_ids[]"]:checked').each(function() {
                         selectedIds.push($(this).val());
                     });
 
-                    console.log('Selected IDs:', selectedIds); // Debug
+                    console.log('Selected Peta IDs:', selectedIds); // Debug
 
                     // Validasi
                     if (selectedIds.length === 0) {
                         Swal.fire({
                             icon: 'warning',
-                            title: 'Tidak ada kegiatan dipilih',
-                            text: 'Silakan centang minimal satu kegiatan yang ingin ditampilkan.',
+                            title: 'Tidak ada risiko dipilih',
+                            text: 'Silakan centang minimal satu risiko yang ingin ditampilkan.',
                             confirmButtonColor: '#3085d6',
                         });
                         return;
@@ -311,12 +311,9 @@
                         title: 'Konfirmasi Update',
                         html: `
                         <div class="text-left">
-                            <p>Anda akan menampilkan <strong>${selectedIds.length} kegiatan</strong> terpilih:</p>
+                            <p>Anda akan menampilkan <strong>${selectedIds.length} risiko</strong> terpilih</p>
                             <div class="alert alert-light small mt-2 mb-0">
-                                <ul class="mb-0 pl-3">
-                                    ${selectedIds.map((id, index) => 
-                                        `<li>Kegiatan #${index + 1} (ID: ${id})</li>`
-                                    ).join('')}
+                                <p class="mb-0"><i class="fas fa-info-circle text-primary mr-1"></i> ${selectedIds.length} risiko akan ditandai untuk ditampilkan di Manajemen Risiko</p>
                                 </ul>
                             </div>
                             <p class="text-muted small mt-2">
@@ -338,8 +335,7 @@
                                 // Buat form untuk submit
                                 var form = document.createElement('form');
                                 form.method = 'POST';
-                                form.action =
-                                    "{{ route('manajemen-risiko.tampilkan-kegiatan') }}";
+                                form.action = "{{ route('manajemen-risiko.update-tampil') }}";
 
                                 // CSRF Token
                                 var csrfInput = document.createElement('input');
@@ -348,25 +344,11 @@
                                 csrfInput.value = "{{ csrf_token() }}";
                                 form.appendChild(csrfInput);
 
-                                // Tahun
-                                var tahunInput = document.createElement('input');
-                                tahunInput.type = 'hidden';
-                                tahunInput.name = 'tahun';
-                                tahunInput.value = "{{ $tahun }}";
-                                form.appendChild(tahunInput);
-
-                                // Unit Kerja
-                                var unitInput = document.createElement('input');
-                                unitInput.type = 'hidden';
-                                unitInput.name = 'unit_kerja';
-                                unitInput.value = "{{ $unitKerja }}";
-                                form.appendChild(unitInput);
-
-                                // Kegiatan IDs
+                                // Peta IDs (Risiko yang dipilih)
                                 selectedIds.forEach(function(id) {
                                     var input = document.createElement('input');
                                     input.type = 'hidden';
-                                    input.name = 'kegiatan_ids[]';
+                                    input.name = 'selected_ids[]';
                                     input.value = id;
                                     form.appendChild(input);
                                 });
