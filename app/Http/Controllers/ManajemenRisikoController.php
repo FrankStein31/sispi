@@ -524,13 +524,14 @@ class ManajemenRisikoController extends Controller
             return redirect()->route('manajemen-risiko.data')->with('error', 'Unit kerja tidak ditemukan!');
         }
 
-        // ✅ PERBAIKAN: Get SEMUA kegiatan untuk unit kerja ini
+        // ✅ Get SEMUA kegiatan untuk unit kerja ini
         $allKegiatans = \App\Models\Kegiatan::where('id_unit_kerja', $unitKerjaModel->id)
             ->orderBy('judul')
             ->get();
 
-        // ✅ PERBAIKAN: Prepare data kegiatan dengan risiko - TAMPILKAN SEMUA
-        $kegiatanWithRisiko = [];
+        // ✅ UBAH: Expand setiap risiko menjadi baris terpisah
+        $expandedRows = [];
+        
         foreach ($allKegiatans as $kegiatan) {
             // Get SEMUA peta risiko untuk kegiatan ini di tahun tertentu
             $petas = Peta::where('id_kegiatan', $kegiatan->id)
@@ -538,37 +539,57 @@ class ManajemenRisikoController extends Controller
                 ->orderByRaw('(skor_kemungkinan * skor_dampak) DESC')
                 ->get();
 
-            // ✅ Hitung total skor risiko
+            $jumlahRisiko = $petas->count();
+            $sudahTampil = $petas->where('tampil_manajemen_risiko', 1)->count();
+            
+            // Hitung total skor risiko untuk kegiatan ini
             $totalSkorRisiko = 0;
             foreach ($petas as $peta) {
                 $totalSkorRisiko += ($peta->skor_kemungkinan * $peta->skor_dampak);
             }
 
-            // ✅ Tambahkan ke array (termasuk yang tidak punya risiko)
-            $kegiatanWithRisiko[] = [
-                'kegiatan' => $kegiatan,
-                'petas' => $petas,
-                'jumlah_risiko' => $petas->count(),
-                'sudah_tampil' => $petas->where('tampil_manajemen_risiko', 1)->count(),
-                'total_skor_risiko' => $totalSkorRisiko,
-            ];
+            // Jika ada risiko, buat baris untuk SETIAP risiko
+            if ($jumlahRisiko > 0) {
+                foreach ($petas as $index => $peta) {
+                    $expandedRows[] = [
+                        'kegiatan' => $kegiatan,
+                        'peta' => $peta, // Risiko spesifik untuk baris ini
+                        'jumlah_risiko' => $jumlahRisiko,
+                        'sudah_tampil' => $sudahTampil,
+                        'total_skor_risiko' => $totalSkorRisiko,
+                        'is_first_row' => $index === 0, // Untuk rowspan di view
+                        'rowspan' => $jumlahRisiko, // Jumlah baris untuk rowspan
+                    ];
+                }
+            } else {
+                // Jika tidak ada risiko, tetap buat 1 baris
+                $expandedRows[] = [
+                    'kegiatan' => $kegiatan,
+                    'peta' => null,
+                    'jumlah_risiko' => 0,
+                    'sudah_tampil' => 0,
+                    'total_skor_risiko' => 0,
+                    'is_first_row' => true,
+                    'rowspan' => 1,
+                ];
+            }
         }
 
         // ✅ Sort berdasarkan total skor risiko (tertinggi ke terendah)
-        usort($kegiatanWithRisiko, function ($a, $b) {
+        usort($expandedRows, function ($a, $b) {
             return $b['total_skor_risiko'] <=> $a['total_skor_risiko'];
         });
 
-        // ✅ Pagination manual (karena sudah di-sort)
-        $perPage = 10;
+        // ✅ Pagination manual
+        $perPage = 20; // Naikkan karena sekarang per-risiko
         $currentPage = $request->input('page', 1);
         $offset = ($currentPage - 1) * $perPage;
-        $kegiatanPaginated = array_slice($kegiatanWithRisiko, $offset, $perPage);
+        $rowsPaginated = array_slice($expandedRows, $offset, $perPage);
 
         // Create paginator
         $kegiatans = new \Illuminate\Pagination\LengthAwarePaginator(
-            $kegiatanPaginated,
-            count($kegiatanWithRisiko),
+            $rowsPaginated,
+            count($expandedRows),
             $perPage,
             $currentPage,
             ['path' => $request->url(), 'query' => $request->query()]
@@ -600,7 +621,6 @@ class ManajemenRisikoController extends Controller
             'unitKerja',
             'unitKerjaModel',
             'tahun',
-            'kegiatanWithRisiko',
             'kegiatans',
             'statistics'
         ));
