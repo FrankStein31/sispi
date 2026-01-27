@@ -259,19 +259,20 @@
                                                 @if (!$isAuditee)
                                                     <th scope="col" width="10%">Unit Kerja</th>
                                                 @endif
-                                                <th scope="col" width="{{ $isAuditee ? '15%' : '12%' }}">Kegiatan</th>
+                                                <th scope="col" width="{{ $isAuditee ? '12%' : '10%' }}">Kegiatan</th>
+                                                <th scope="col" width="{{ $isAuditee ? '10%' : '8%' }}">Risiko Terpilih</th>
                                                 <th scope="col" width="{{ $isAuditee ? '8%' : '7%' }}">Kategori</th>
                                                 <th scope="col"
-                                                    width="{{ $isAdmin ? '13%' : ($isAuditee ? '20%' : '15%') }}">Judul
+                                                    width="{{ $isAdmin ? '13%' : ($isAuditee ? '18%' : '15%') }}">Judul
                                                     Risiko</th>
                                                 @if ($isAdmin)
                                                     <th scope="col" width="10%">Auditor</th>
                                                 @endif
                                                 <th scope="col" width="{{ $isAuditee ? '6%' : '5%' }}">Skor</th>
-                                                <th scope="col" width="8%">Tingkat</th>
-                                                <th scope="col" width="{{ $isAuditee ? '9%' : '7%' }}">Status</th>
-                                                <th scope="col" width="{{ $isAuditee ? '10%' : '8%' }}">Komentar</th>
-                                                <th scope="col" width="{{ $isAuditee ? '11%' : '12%' }}">Aksi</th>
+                                                <th scope="col" width="7%">Tingkat</th>
+                                                <th scope="col" width="{{ $isAuditee ? '8%' : '7%' }}">Status</th>
+                                                <th scope="col" width="{{ $isAuditee ? '9%' : '8%' }}">Komentar</th>
+                                                <th scope="col" width="{{ $isAuditee ? '10%' : '11%' }}">Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -308,29 +309,90 @@
                                                     @endif
                                                     <td class="text-center align-middle">
                                                         @php
-                                                            // 🔹 PASTIKAN unitKerjaModel ADA
+                                                            // Hitung jumlah risiko dan risiko terpilih dengan cache
+                                                            static $risikoCountCache = [];
+                                                            static $risikoTerpilihCache = [];
+                                                            
+                                                            $unitName = $peta->jenis;
+                                                            
+                                                            if (!isset($risikoCountCache[$unitName])) {
+                                                                $risikoCountCache[$unitName] = \App\Models\Peta::where('jenis', $unitName)
+                                                                    ->whereYear('created_at', $tahun)
+                                                                    ->count();
+                                                            }
+                                                            
+                                                            if (!isset($risikoTerpilihCache[$unitName])) {
+                                                                $risikoTerpilihCache[$unitName] = \App\Models\Peta::where('jenis', $unitName)
+                                                                    ->whereYear('created_at', $tahun)
+                                                                    ->where('tampil_manajemen_risiko', 1)
+                                                                    ->count();
+                                                            }
+                                                            
+                                                            $jumlahRisikoUnit = $risikoCountCache[$unitName];
+                                                            $jumlahRisikoTerpilih = $risikoTerpilihCache[$unitName];
+                                                            
+                                                            // Hitung unit kerja model untuk kegiatan
                                                             $unitKerjaModel = \App\Models\UnitKerja::where(
                                                                 'nama_unit_kerja',
                                                                 $peta->jenis,
                                                             )->first();
 
-                                                            // 🔹 Default
+                                                            // Default
                                                             $jumlahKegiatanTampil = 0;
+                                                            $totalKegiatanUnit = 0;
 
-                                                            // 🔹 Hitung jika unit ditemukan
+                                                            // Hitung jika unit ditemukan
                                                             if ($unitKerjaModel) {
                                                                 $jumlahKegiatanTampil = \App\Models\Kegiatan::hitungKegiatanTampil(
                                                                     $unitKerjaModel->id,
                                                                     $tahun,
                                                                 );
+                                                                $totalKegiatanUnit = \App\Models\Kegiatan::where(
+                                                                    'id_unit_kerja',
+                                                                    $unitKerjaModel->id,
+                                                                )->count();
                                                             }
                                                         @endphp
 
-                                                        <span class="badge badge-info badge-pill" data-toggle="tooltip"
-                                                            title="Jumlah kegiatan yang ditampilkan">
-                                                            <i class="fas fa-tasks mr-1"></i>
-                                                            {{ $jumlahKegiatanTampil }}
-                                                        </span>
+                                                        <div class="d-flex flex-column align-items-center">
+                                                            <div class="d-flex align-items-center mb-1">
+                                                                <i class="fas fa-tasks text-primary mr-1"></i>
+                                                                <span class="font-weight-bold" style="font-size: 1rem; color: #1976d2;">
+                                                                    {{ $jumlahKegiatanTampil }}
+                                                                </span>
+                                                                @if ($totalKegiatanUnit > 0)
+                                                                    <small class="text-muted ml-1">/{{ $totalKegiatanUnit }}</small>
+                                                                @endif
+                                                            </div>
+                                                            <small class="text-muted" style="font-size: 0.75rem;">
+                                                                @if ($jumlahKegiatanTampil == 0)
+                                                                    <span class="text-danger">Tidak ada</span>
+                                                                @else
+                                                                    {{ $jumlahKegiatanTampil }} kegiatan
+                                                                @endif
+                                                            </small>
+                                                        </div>
+                                                    </td>
+
+                                                    <td class="text-center align-middle">
+                                                        <div class="d-flex flex-column align-items-center">
+                                                            <div class="d-flex align-items-center mb-1">
+                                                                <i class="fas fa-check-circle text-success mr-1"></i>
+                                                                <span class="font-weight-bold" style="font-size: 1rem; color: #28a745;">
+                                                                    {{ $jumlahRisikoTerpilih }}
+                                                                </span>
+                                                                @if ($jumlahRisikoUnit > 0)
+                                                                    <small class="text-muted ml-1">/{{ $jumlahRisikoUnit }}</small>
+                                                                @endif
+                                                            </div>
+                                                            <small class="text-muted" style="font-size: 0.75rem;">
+                                                                @if ($jumlahRisikoTerpilih == 0)
+                                                                    <span class="text-danger">Belum ada</span>
+                                                                @else
+                                                                    {{ $jumlahRisikoTerpilih }} risiko
+                                                                @endif
+                                                            </small>
+                                                        </div>
                                                     </td>
 
                                                     <td class="text-center">
@@ -506,7 +568,7 @@
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="{{ $isAdmin ? '11' : ($isAuditee ? '9' : '10') }}"
+                                                    <td colspan="{{ $isAdmin ? '12' : ($isAuditee ? '10' : '11') }}"
                                                         class="text-center">
                                                         <div
                                                             class="alert {{ $isAuditee || $isAuditor ? 'alert-info' : 'alert-warning' }} mb-0">
