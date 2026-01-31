@@ -950,6 +950,17 @@ class ManajemenRisikoController extends Controller
             $levelText = 'LOW';
         }
 
+        // Calculate residual risk
+        if ($skorTotal >= 20) {
+            $residualText = 'Extreme';
+        } elseif ($skorTotal >= 15) {
+            $residualText = 'High';
+        } elseif ($skorTotal >= 10) {
+            $residualText = 'Moderate';
+        } else {
+            $residualText = 'Low';
+        }
+
         // Create or update hasil audit
         $hasilAudit = HasilAudit::updateOrCreate(
             [
@@ -969,6 +980,8 @@ class ManajemenRisikoController extends Controller
                 'kode_risiko' => $peta->kode_regist,
                 'kegiatan' => $peta->kegiatan->judul ?? $peta->judul,
                 'level_risiko' => $levelText,
+                'risiko_residual' => $residualText,
+                'skor_total' => $skorTotal,
                 'nama_pemonev' => $user->name,
                 'nip_pemonev' => $user->nip,
             ]

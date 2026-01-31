@@ -140,13 +140,16 @@
         <tr>
             <td colspan="2" style="border-right:0;">
                 <span class="font-weight-bold">LEVEL RISIKO </span>
-                <span class="badge {{ $badgeClass }}">{{ $levelText }}</span>
+                <span class="badge {{ $badgeClass }}">{{ $hasilAudit->level_risiko ?? $levelText }}</span>
             </td>
         </tr>
         <tr>
             <td colspan="3">
                 <span class="font-weight-bold">RISIKO RESIDUAL</span>
-                <span class="badge {{ $residualClass }}">{{ $residualText }}</span>
+                <span class="badge {{ $residualClass }}">{{ $hasilAudit->risiko_residual ?? $residualText }}</span>
+                @if($hasilAudit && $hasilAudit->skor_total)
+                    <span style="font-size: 10px; color: #666;"> (Skor Total: {{ $hasilAudit->skor_total }})</span>
+                @endif
             </td>
         </tr>
 

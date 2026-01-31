@@ -70,14 +70,17 @@
                         <td colspan="2" style="border-right:0;">
                             <span class="font-weight-bold">LEVEL RISIKO </span>
                             <span class="badge {{ $badgeClass }} p-2 ml-2"
-                                style="font-size:15px;">{{ $levelText }}</span>
+                                style="font-size:15px;">{{ $hasilAudit->level_risiko }}</span>
                         </td>
                     </tr>
                     <tr>
                         <td colspan="3">
                             <span class="font-weight-bold">RISIKO RESIDUAL</span>
                             <span class="badge {{ $residualClass }} p-2 ml-2"
-                                style="font-size:15px;">{{ $residualText }}</span>
+                                style="font-size:15px;">{{ $hasilAudit->risiko_residual }}</span>
+                            <span class="ml-2">
+                                <small class="text-muted">(Skor Total: {{ $hasilAudit->skor_total }})</small>
+                            </span>
                         </td>
                     </tr>
 

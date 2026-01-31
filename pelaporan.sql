@@ -98,9 +98,20 @@ CREATE TABLE `comment_prs` (
   KEY `comment_prs_user_id_foreign` (`user_id`),
   CONSTRAINT `comment_prs_peta_id_foreign` FOREIGN KEY (`peta_id`) REFERENCES `petas` (`id`) ON DELETE CASCADE,
   CONSTRAINT `comment_prs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `comment_prs` */
+
+insert  into `comment_prs`(`id`,`peta_id`,`user_id`,`jenis`,`comment`,`created_at`,`updated_at`) values 
+(1,25,2,'analisis','1. wasd\n2. wasdw\n3. wasd','2026-01-31 20:36:21','2026-01-31 20:36:21'),
+(2,25,2,'analisis','1. wasd\n2. wasdw\n3. wasddd','2026-01-31 20:42:45','2026-01-31 20:42:45'),
+(3,25,2,'analisis','1. wasd\n2. wasdw\n3. wasddd','2026-01-31 20:43:08','2026-01-31 20:43:08'),
+(4,25,2,'analisis','1. wasd\n2. wasdwwas\n3. wasddd','2026-01-31 20:43:16','2026-01-31 20:43:16'),
+(5,25,2,'analisis','1. coba\n2. coba\n3. coba','2026-01-31 20:45:25','2026-01-31 20:45:25'),
+(6,25,2,'analisis','1. coba\n2. coba\n3. coba','2026-01-31 20:51:13','2026-01-31 20:51:13'),
+(7,25,2,'analisis','1. cobaa\n2. cobaa\n3. cobaa','2026-01-31 21:08:08','2026-01-31 21:08:08'),
+(8,25,2,'analisis','1. cobaa\n2. cobaa\n3. cobaa','2026-01-31 21:10:42','2026-01-31 21:10:42'),
+(9,20,2,'analisis','1. wasd\n2. wasd\n3. wasd','2026-01-31 21:11:43','2026-01-31 21:11:43');
 
 /*Table structure for table `comments` */
 
@@ -167,6 +178,44 @@ CREATE TABLE `failed_jobs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `failed_jobs` */
+
+/*Table structure for table `hasil_audit` */
+
+CREATE TABLE `hasil_audit` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `peta_id` bigint unsigned NOT NULL,
+  `auditor_id` bigint unsigned NOT NULL,
+  `komentar_1` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `komentar_2` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `komentar_3` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `pengendalian` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mitigasi` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status_konfirmasi_auditee` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status_konfirmasi_auditor` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `unit_kerja` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kode_risiko` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `kegiatan` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `level_risiko` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `risiko_residual` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `skor_total` int DEFAULT NULL,
+  `tahun_anggaran` varchar(4) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nama_pemonev` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nip_pemonev` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `file_lampiran` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `hasil_audit_peta_id_index` (`peta_id`),
+  KEY `hasil_audit_auditor_id_index` (`auditor_id`),
+  KEY `hasil_audit_tahun_anggaran_index` (`tahun_anggaran`),
+  KEY `hasil_audit_unit_kerja_index` (`unit_kerja`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+/*Data for the table `hasil_audit` */
+
+insert  into `hasil_audit`(`id`,`peta_id`,`auditor_id`,`komentar_1`,`komentar_2`,`komentar_3`,`pengendalian`,`mitigasi`,`status_konfirmasi_auditee`,`status_konfirmasi_auditor`,`unit_kerja`,`kode_risiko`,`kegiatan`,`level_risiko`,`risiko_residual`,`skor_total`,`tahun_anggaran`,`nama_pemonev`,`nip_pemonev`,`file_lampiran`,`created_at`,`updated_at`) values 
+(1,25,2,'cobaa','cobaa','cobaa','cobaa','cobaa','perlu_revisi','perlu_revisi','UPA TIK','UPA TIK_1','Pengembangan SDM dan Kompetensi - UPA TIK','HIGH','Extreme',20,'2026','Usman Nurhasan, S.Kom., MT','198609232015041001',NULL,'2026-01-31 21:08:08','2026-01-31 21:10:41'),
+(2,20,2,'wasd','wasd','wasd','wasd','wasd','ditolak','perlu_revisi','WADIR I','WADIR I_1','Program Kerjasama dan Kemitraan - WADIR I','MODERATE','Moderate',12,'2026','Usman Nurhasan, S.Kom., MT','198609232015041001',NULL,'2026-01-31 21:11:43','2026-01-31 21:11:43');
 
 /*Table structure for table `head_menus` */
 
@@ -898,7 +947,7 @@ insert  into `menus`(`id`,`parent_id`,`name`,`link`,`icon`,`created_at`,`updated
 (20,NULL,'Berita Acara','/berita-acara','fas fa-paste','2026-01-27 16:17:53','2026-01-27 16:17:53',NULL),
 (21,NULL,'Manajemen Risiko','/manajemen-risiko','fas fa-shield-halved','2026-01-27 16:17:53','2026-01-27 16:17:53',NULL),
 (22,21,'Data Manajemen Risiko','/manajemen-risiko/data','fas fa-database','2026-01-27 16:17:53','2026-01-27 16:17:53',NULL),
-(23,21,'Sub menu 2','/manajemen-risiko/sub-menu-2','fas fa-chart-line','2026-01-27 16:17:53','2026-01-27 16:17:53',NULL);
+(23,21,'Hasil Audit','/manajemen-risiko/hasil-audit','fas fa-chart-line','2026-01-27 16:17:53','2026-01-27 16:17:53',NULL);
 
 /*Table structure for table `migrations` */
 
@@ -907,7 +956,7 @@ CREATE TABLE `migrations` (
   `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `migrations` */
 
@@ -958,7 +1007,10 @@ insert  into `migrations`(`id`,`migration`,`batch`) values
 (44,'2026_01_08_204836_add_parent_id_to_menus_table',1),
 (45,'2026_01_09_042433_add_tampil_manajemen_risiko_to_petas_table',1),
 (46,'2026_01_11_164932_add_template_columns_to_petas_table',1),
-(47,'2026_01_25_161052_add_monitoring_columns_to_petas_table',1);
+(47,'2026_01_25_161052_add_monitoring_columns_to_petas_table',1),
+(48,'2026_01_31_191307_create_hasil_audit_table',2),
+(49,'2026_01_31_203123_add_file_lampiran_to_hasil_audit_table',3),
+(50,'2026_01_31_210215_create_hasil_audit_table',4);
 
 /*Table structure for table `password_resets` */
 
@@ -1060,12 +1112,12 @@ insert  into `petas`(`id`,`id_kegiatan`,`judul`,`jenis`,`anggaran`,`dokumen`,`do
 (17,19,'Reakreditasi Program Studi Unggulan','BPKU','250000000',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'1',0,'2025-02-20','2025-02-25','2025-03-01',NULL,NULL,NULL,NULL,NULL,'2025-01-15 00:00:00','2026-01-27 16:21:40','BPKU_2025_1','Risiko penurunan peringkat akreditasi','Mutu','Penurunan peringkat dapat mengurangi daya saing prodi','Perbaikan dokumen dan peningkatan kinerja prodi',2,5,'Moderate',NULL,NULL,NULL,NULL,NULL),
 (18,153,'Pengembangan Lab Manufaktur Modern','Jurusan Teknik Mesin','600000000',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'1',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-02-10 00:00:00','2026-01-27 16:21:40','Jurusan Teknik Mesin_2025_1','Risiko ketidaksesuaian peralatan dengan kebutuhan industri','Fasilitas','Peralatan yang tidak update mengurangi kompetensi lulusan','Survey kebutuhan industri dan konsultasi ahli',2,4,'Low',NULL,NULL,NULL,NULL,NULL),
 (19,35,'Audit Keuangan dan Operasional','SPI','180000000',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'1',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-03-01 00:00:00','2026-01-27 16:21:40','SPI_2025_1','Risiko temuan audit yang signifikan','Pengendalian Internal','Temuan signifikan dapat mempengaruhi citra institusi','Penguatan internal control dan SOP',2,4,'Low',NULL,NULL,NULL,NULL,NULL),
-(20,4,'Pengembangan Kurikulum Berbasis Industri 4.0','WADIR I','150000000',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'1',1,'2026-01-05','2026-01-10','2026-01-15',NULL,NULL,NULL,NULL,NULL,'2026-01-27 16:17:56','2026-01-27 18:46:44','WADIR I_1','Risiko ketidaksesuaian kurikulum dengan kebutuhan industri','Strategis','Kurikulum yang tidak relevan dapat menyebabkan lulusan kurang kompetitif','Review berkala dengan stakeholder industri',3,4,'Moderate',NULL,NULL,NULL,NULL,NULL),
+(20,4,'Pengembangan Kurikulum Berbasis Industri 4.0','WADIR I','150000000',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'1',1,'2026-01-05','2026-01-10','2026-01-15',2,NULL,NULL,NULL,NULL,'2026-01-27 16:17:56','2026-01-31 20:51:56','WADIR I_1','Risiko ketidaksesuaian kurikulum dengan kebutuhan industri','Strategis','Kurikulum yang tidak relevan dapat menyebabkan lulusan kurang kompetitif','Review berkala dengan stakeholder industri',3,4,'Moderate',NULL,NULL,NULL,NULL,NULL),
 (21,4,'Peningkatan Kualitas Pembelajaran Digital','WADIR I','200000000',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-27 16:17:56','2026-01-27 16:21:40','WADIR I_2','Risiko kegagalan implementasi sistem pembelajaran online','Operasional','Infrastruktur IT yang kurang memadai dapat menghambat pembelajaran','Peningkatan kapasitas server dan bandwidth',2,3,'Low',NULL,NULL,NULL,NULL,NULL),
 (22,8,'Pengembangan Penelitian Kolaboratif','WADIR II','300000000',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'1',1,'2026-01-06','2026-01-12','2026-01-18',NULL,NULL,NULL,NULL,NULL,'2026-01-27 16:17:56','2026-01-27 18:46:44','WADIR II_1','Risiko keterlambatan publikasi penelitian internasional','Akademik','Keterlambatan dapat mengurangi reputasi institusi','Monitoring progres penelitian secara berkala',3,4,'Moderate',NULL,NULL,NULL,NULL,NULL),
 (23,10,'Program Kerjasama Industri','WADIR III','250000000',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'1',0,'2026-01-07','2026-01-14','2026-01-20',NULL,NULL,NULL,NULL,NULL,'2026-01-27 16:17:56','2026-01-27 16:21:40','WADIR III_1','Risiko pembatalan MoU dengan mitra industri','Kemitraan','Pembatalan dapat mengurangi peluang magang mahasiswa','Evaluasi berkala kepuasan mitra',2,4,'Low',NULL,NULL,NULL,NULL,NULL),
 (24,20,'Peningkatan Layanan Penjaminan Mutu','BPKU','100000000',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'1',1,'2026-01-08','2026-01-15','2026-01-22',NULL,NULL,NULL,NULL,NULL,'2026-01-27 16:17:56','2026-01-27 18:46:44','BPKU_1','Risiko penurunan nilai akreditasi','Mutu','Penurunan akreditasi dapat mengurangi minat calon mahasiswa','Audit mutu internal berkala',2,5,'Moderate',NULL,NULL,NULL,NULL,NULL),
-(25,63,'Upgrade Infrastruktur Jaringan Kampus','UPA TIK','600000000',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'1',1,'2026-01-09','2026-01-16','2026-01-23',NULL,NULL,NULL,NULL,NULL,'2026-01-27 16:17:56','2026-01-27 18:46:44','UPA TIK_1','Risiko gangguan jaringan internet kampus','Infrastruktur IT','Gangguan dapat menghambat aktivitas akademik','Redundancy system dan backup connection',4,5,'Extreme',NULL,NULL,NULL,NULL,NULL),
+(25,63,'Upgrade Infrastruktur Jaringan Kampus','UPA TIK','600000000',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'1',1,'2026-01-09','2026-01-16','2026-01-23',2,NULL,NULL,NULL,NULL,'2026-01-27 16:17:56','2026-01-27 18:50:15','UPA TIK_1','Risiko gangguan jaringan internet kampus','Infrastruktur IT','Gangguan dapat menghambat aktivitas akademik','Redundancy system dan backup connection',4,5,'Extreme',NULL,NULL,NULL,NULL,NULL),
 (26,1,'Kurangnya SDM Kompeten','WADIR I','196865106',NULL,NULL,'2026-11-20',NULL,NULL,NULL,NULL,NULL,'0',1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-27 17:27:32','2026-01-27 17:50:15','AUTO-C9BEFA0B','Risiko ini telah diidentifikasi dan perlu dilakukan mitigasi','Sumber Daya Manusia','Risiko keterbatasan sumber daya manusia yang memiliki kompetensi sesuai kebutuhan kegiatan','Risk Assessment',2,3,'Moderate','Monitoring berkala dan evaluasi risiko','Penyusunan rencana mitigasi risiko dan tindakan preventif',NULL,NULL,NULL),
 (27,1,'Kualitas Output Tidak Sesuai Standar','WADIR I','196865106',NULL,NULL,'2026-12-19',NULL,NULL,NULL,NULL,NULL,'0',1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-27 17:27:32','2026-01-27 17:50:15','AUTO-5BAF4466','Risiko ini telah diidentifikasi dan perlu dilakukan mitigasi','Kualitas','Risiko hasil kegiatan tidak memenuhi standar mutu yang ditetapkan','Risk Assessment',2,4,'Moderate','Monitoring berkala dan evaluasi risiko','Penyusunan rencana mitigasi risiko dan tindakan preventif',NULL,NULL,NULL),
 (28,1,'Anggaran Tidak Mencukupi','WADIR I','196865106',NULL,NULL,'2026-03-10',NULL,NULL,NULL,NULL,NULL,'0',1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-27 17:27:32','2026-01-27 17:50:15','AUTO-0398737B','Risiko ini telah diidentifikasi dan perlu dilakukan mitigasi','Keuangan','Risiko kekurangan dana untuk menyelesaikan kegiatan sesuai rencana','Risk Assessment',2,4,'Moderate','Monitoring berkala dan evaluasi risiko','Penyusunan rencana mitigasi risiko dan tindakan preventif',NULL,NULL,NULL),

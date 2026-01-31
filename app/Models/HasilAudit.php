@@ -25,6 +25,8 @@ class HasilAudit extends Model
         'kode_risiko',
         'kegiatan',
         'level_risiko',
+        'risiko_residual',
+        'skor_total',
         'tahun_anggaran',
         'nama_pemonev',
         'nip_pemonev',
@@ -32,8 +34,7 @@ class HasilAudit extends Model
     ];
 
     protected $casts = [
-        'status_konfirmasi_auditee' => 'boolean',
-        'status_konfirmasi_auditor' => 'boolean',
+        'skor_total' => 'integer',
     ];
 
     /**
