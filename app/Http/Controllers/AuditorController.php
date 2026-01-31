@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Peta;
 use App\Models\CommentPr;
 use App\Models\User;
+use App\Models\HasilAudit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -178,7 +179,7 @@ class AuditorController extends Controller
 
         // Pastikan auditor hanya update data miliknya
         // Saya hapus baris findOrFail kedua agar lebih efisien
-        $peta = Peta::where('auditor_id', $user->id)->findOrFail($id);
+        $peta = Peta::where('auditor_id', $user->id)->with('kegiatan')->findOrFail($id);
 
         // Validasi
         $request->validate([
@@ -191,15 +192,42 @@ class AuditorController extends Controller
             'status_konfirmasi_auditor' => 'nullable|string',
         ]);
 
-        // Simpan hasil review ke tabel utama
-        $peta->update([
-            'pengendalian' => $request->pengendalian,
-            'mitigasi' => $request->mitigasi,
-            'status_konfirmasi_auditee' => $request->status_konfirmasi_auditee,
-            'status_konfirmasi_auditor' => $request->status_konfirmasi_auditor,
-        ]);
+        // Calculate score and level
+        $skorTotal = $peta->skor_kemungkinan * $peta->skor_dampak;
 
-        // Simpan komentar auditor (gabung jadi satu log)
+        if ($skorTotal >= 15) {
+            $levelText = 'HIGH';
+        } elseif ($skorTotal >= 10) {
+            $levelText = 'MODERATE';
+        } else {
+            $levelText = 'LOW';
+        }
+
+        // Simpan hasil review ke tabel hasil_audit
+        $hasilAudit = HasilAudit::updateOrCreate(
+            [
+                'peta_id' => $peta->id,
+                'auditor_id' => $user->id,
+                'tahun_anggaran' => date('Y'),
+            ],
+            [
+                'komentar_1' => $request->komentar_1,
+                'komentar_2' => $request->komentar_2,
+                'komentar_3' => $request->komentar_3,
+                'pengendalian' => $request->pengendalian,
+                'mitigasi' => $request->mitigasi,
+                'status_konfirmasi_auditee' => $request->status_konfirmasi_auditee ?? null,
+                'status_konfirmasi_auditor' => $request->status_konfirmasi_auditor ?? null,
+                'unit_kerja' => $peta->jenis,
+                'kode_risiko' => $peta->kode_regist,
+                'kegiatan' => $peta->kegiatan->judul ?? $peta->judul,
+                'level_risiko' => $levelText,
+                'nama_pemonev' => $user->name,
+                'nip_pemonev' => $user->nip,
+            ]
+        );
+
+        // Simpan komentar auditor (gabung jadi satu log) - Keep existing CommentPr for backward compatibility
         CommentPr::create([
             'peta_id' => $peta->id,
             'user_id' => $user->id,
@@ -216,6 +244,7 @@ class AuditorController extends Controller
             ->route('manajemen-risiko.auditor.show-detail', $peta->id)
             ->with('success', 'Data berhasil diperbarui. Silakan unduh template untuk review pada langkah kedua.');
     }
+
 
 
 

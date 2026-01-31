@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Peta;
 use App\Models\CommentPr;
 use App\Models\User;
+use App\Models\HasilAudit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -917,5 +918,154 @@ class ManajemenRisikoController extends Controller
         $writer->save($temp_file);
 
         return response()->download($temp_file, $filename)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Update audit template (save to hasil_audit table)
+     */
+    public function updateAuditorTemplate(Request $request, $id)
+    {
+        $request->validate([
+            'pengendalian' => 'required|string',
+            'mitigasi' => 'required|string',
+            'komentar_1' => 'required|string',
+            'komentar_2' => 'required|string',
+            'komentar_3' => 'required|string',
+            'status_konfirmasi_auditee' => 'nullable|string',
+            'status_konfirmasi_auditor' => 'nullable|string',
+        ]);
+
+        $user = Auth::user();
+        $peta = Peta::with('kegiatan')->findOrFail($id);
+
+        // Calculate score
+        $skorTotal = $peta->skor_kemungkinan * $peta->skor_dampak;
+
+        // Determine level
+        if ($skorTotal >= 15) {
+            $levelText = 'HIGH';
+        } elseif ($skorTotal >= 10) {
+            $levelText = 'MODERATE';
+        } else {
+            $levelText = 'LOW';
+        }
+
+        // Create or update hasil audit
+        $hasilAudit = HasilAudit::updateOrCreate(
+            [
+                'peta_id' => $peta->id,
+                'auditor_id' => $user->id,
+                'tahun_anggaran' => date('Y'),
+            ],
+            [
+                'komentar_1' => $request->komentar_1,
+                'komentar_2' => $request->komentar_2,
+                'komentar_3' => $request->komentar_3,
+                'pengendalian' => $request->pengendalian,
+                'mitigasi' => $request->mitigasi,
+                'status_konfirmasi_auditee' => $request->status_konfirmasi_auditee ?? null,
+                'status_konfirmasi_auditor' => $request->status_konfirmasi_auditor ?? null,
+                'unit_kerja' => $peta->jenis,
+                'kode_risiko' => $peta->kode_regist,
+                'kegiatan' => $peta->kegiatan->judul ?? $peta->judul,
+                'level_risiko' => $levelText,
+                'nama_pemonev' => $user->name,
+                'nip_pemonev' => $user->nip,
+            ]
+        );
+
+        return redirect()->back()->with('success', 'Data audit berhasil disimpan!');
+    }
+
+    /**
+     * Export audit template to PDF
+     */
+    public function exportAuditorPdf($id)
+    {
+        $user = Auth::user();
+        $peta = Peta::with(['comment_prs.user', 'kegiatan', 'auditor'])->findOrFail($id);
+        
+        // Get hasil audit if exists
+        $hasilAudit = HasilAudit::where('peta_id', $peta->id)
+            ->where('auditor_id', $user->id)
+            ->where('tahun_anggaran', date('Y'))
+            ->first();
+
+        $skorTotal = $peta->skor_kemungkinan * $peta->skor_dampak;
+
+        // LEVEL
+        if ($skorTotal >= 20) {
+            $levelText = 'HIGH';
+            $badgeClass = 'bg-warning text-dark';
+        } elseif ($skorTotal >= 15) {
+            $levelText = 'HIGH';
+            $badgeClass = 'bg-warning text-dark';
+        } elseif ($skorTotal >= 10) {
+            $levelText = 'MODERATE';
+            $badgeClass = 'bg-warning text-dark';
+        } else {
+            $levelText = 'LOW';
+            $badgeClass = 'bg-success text-white';
+        }
+
+        // RESIDUAL
+        if ($skorTotal >= 20) {
+            $residualText = 'Extreme';
+            $residualClass = 'bg-danger text-white';
+        } elseif ($skorTotal >= 15) {
+            $residualText = 'High';
+            $residualClass = 'bg-warning text-dark';
+        } elseif ($skorTotal >= 10) {
+            $residualText = 'Moderate';
+            $residualClass = 'bg-info text-dark';
+        } else {
+            $residualText = 'Low';
+            $residualClass = 'bg-success text-white';
+        }
+
+        $pdf = Pdf::loadView('manajemen_risiko.export_audit_pdf', compact(
+            'peta',
+            'hasilAudit',
+            'user',
+            'skorTotal',
+            'levelText',
+            'badgeClass',
+            'residualText',
+            'residualClass'
+        ));
+
+        $filename = 'Audit_' . $peta->kode_regist . '_' . date('Y-m-d') . '.pdf';
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Upload lampiran audit
+     */
+    public function uploadAuditorLampiran(Request $request, $id)
+    {
+        $request->validate([
+            'file_pendukung' => 'required|file|mimes:pdf,xls,xlsx|max:10240',
+        ]);
+
+        $peta = Peta::findOrFail($id);
+        $user = Auth::user();
+
+        if ($request->hasFile('file_pendukung')) {
+            $file = $request->file('file_pendukung');
+            $filename = 'audit_' . $peta->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('public/audit_lampiran', $filename);
+
+            // Update hasil audit with file path
+            HasilAudit::where('peta_id', $peta->id)
+                ->where('auditor_id', $user->id)
+                ->where('tahun_anggaran', date('Y'))
+                ->update([
+                    'file_lampiran' => $filename,
+                ]);
+
+            return redirect()->back()->with('success', 'File berhasil dikirim ke Auditee!');
+        }
+
+        return redirect()->back()->with('error', 'File gagal diupload!');
     }
 }
