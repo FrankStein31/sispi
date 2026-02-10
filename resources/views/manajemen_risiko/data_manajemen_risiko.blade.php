@@ -181,8 +181,6 @@
                     </div>
                 </div>
 
-
-
                 {{-- DATA TABLE SECTION --}}
                 <div class="row">
                     <div class="col-12">
@@ -280,10 +278,10 @@
                                                     </div>
 
                                                     {{-- Download Template Column --}}
-                                                    <div class="col-lg-3">
+                                                    <div class="col-lg-3 d-md-flex justify-content-md-end">
                                                         <div class="form-group mb-0">
                                                             <label class="form-label font-weight-bold small">DOWNLOAD
-                                                                TEMPLATE</label>
+                                                                TEMPLATE DISINI!</label>
                                                             <div class="d-grid gap-2">
                                                                 <a href="{{ route('manajemen-risiko.template.pdf') }}?tahun={{ $tahun }}&unit_kerja={{ $unitKerja }}"
                                                                     class="btn btn-danger" title="Download Template PDF">
@@ -327,25 +325,13 @@
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div class="col-lg-7">
+                                                <div class="col-lg-7 d-md-flex justify-content-md-end">
                                                     <div class="form-group mb-0">
-                                                        <label class="form-label font-weight-bold small">AKSI MANAJEMEN
-                                                            RISIKO</label>
                                                         <div class="d-grid gap-2">
                                                             <button type="button" class="btn btn-primary"
                                                                 onclick="showSelectedData()">
-                                                                <i class="fas fa-eye mr-2"></i> Submit Data ke Manajemen
+                                                                <i class="fas fa-eye mr-2"></i> Submit Manajemen
                                                                 Risiko
-                                                            </button>
-
-                                                            <button type="button" class="btn btn-info text-white"
-                                                                onclick="selectAll()">
-                                                                <i class="fas fa-check-square mr-2"></i> Pilih Semua
-                                                            </button>
-
-                                                            <button type="button" class="btn btn-warning text-white"
-                                                                onclick="deselectAll()">
-                                                                <i class="fas fa-square mr-2"></i> Batal Pilih
                                                             </button>
 
                                                             <a href="{{ route('manajemen-risiko.index') }}"
@@ -374,8 +360,8 @@
                                                     <th width="60" class="text-center">No</th>
                                                     <th>Unit Kerja</th>
                                                     <th width="100" class="text-center">Kode</th>
-                                                    {{-- <th width="120" class="text-center">Kegiatan</th> --}} <th width="130" class="text-center">Risiko
-                                                        Kegiatan</th>
+                                                    {{-- <th width="120" class="text-center">Kegiatan</th> --}} <th width="130" class="text-center">Kegiatan
+                                                    </th>
 
                                                     <th width="120" class="text-center">Kategori</th>
                                                     <th class="text-center"> Judul Risiko</th>
@@ -580,12 +566,12 @@
                                                                 </div>
                                                                 <small class="text-muted">
                                                                     @if ($jumlahRisikoTerpilih == 0)
-                                                                        <span class="text-danger">Belum ada risiko
+                                                                        <span class="text-danger">Belum ada kegiatan
                                                                             dipilih</span>
                                                                     @elseif($jumlahRisikoTerpilih == 1)
-                                                                        1 risiko dipilih
+                                                                        1 kegiatan dipilih
                                                                     @else
-                                                                        {{ $jumlahRisikoTerpilih }} risiko dipilih
+                                                                        {{ $jumlahRisikoTerpilih }} kegiatan dipilih
                                                                     @endif
                                                                 </small>
                                                             </div>
@@ -1081,13 +1067,13 @@
             }
 
             Swal.fire({
-                title: 'Konfirmasi Tampilkan Data',
+                title: 'Konfirmasi Submit Manajemen Risiko',
                 html: `
                     <div class="text-center">
                         <div class="alert alert-light mb-3">
-                            <i class="fas fa-eye fa-2x text-primary mb-2"></i>
-                            <h5 class="mb-1">Tampilkan ${selectedCount} Data</h5>
-                            <small class="text-muted">Data yang dipilih akan ditampilkan di halaman Manajemen Risiko</small>
+                            <i class="fas fa-paper-plane fa-2x text-primary mb-2"></i>
+                            <h5 class="mb-1">Submit ${selectedCount} Data ke Manajemen Risiko</h5>
+                            <small class="text-muted">Data yang dipilih akan ditampilkan di halaman Manajemen Risiko dan Anda akan diarahkan ke sana</small>
                         </div>
                         <p class="text-muted small">Apakah Anda yakin ingin melanjutkan?</p>
                     </div>
@@ -1096,13 +1082,29 @@
                 showCancelButton: true,
                 confirmButtonColor: '#6777ef',
                 cancelButtonColor: '#6c757d',
-                confirmButtonText: '<i class="fas fa-check mr-1"></i> Ya, Tampilkan',
+                confirmButtonText: '<i class="fas fa-check mr-1"></i> Ya, Submit & Redirect',
                 cancelButtonText: 'Batal',
-                width: '450px'
+                width: '500px'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // ✅ PERBAIKAN: Set form action dengan route yang benar
                     const form = document.getElementById('selectionForm');
                     form.action = '{{ route('manajemen-risiko.update-tampil') }}';
+                    form.method = 'POST';
+
+                    // ✅ PERBAIKAN: Tampilkan loading sebelum submit
+                    Swal.fire({
+                        title: 'Memproses...',
+                        html: 'Mohon tunggu, sedang menyimpan data...',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        willOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // ✅ PERBAIKAN: Submit form
                     form.submit();
                 }
             });

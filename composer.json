@@ -9,7 +9,6 @@
         "anhskohbo/no-captcha": "^3.6",
         "arielmejiadev/larapex-charts": "^7.0",
         "barryvdh/laravel-dompdf": "^3.0@beta",
-        "doctrine/dbal": "^4.4",
         "dompdf/dompdf": "^3.0",
         "fruitcake/laravel-cors": "^2.0.5",
         "guzzlehttp/guzzle": "^7.2",
